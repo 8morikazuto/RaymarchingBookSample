@@ -1,6 +1,6 @@
 ﻿Shader "Custom/raymarchOptimized_8moristudy"
 {
-	
+		//目標：サンプルシェーダーを改変し、XRayのような効果を持つレイマーチングを実装してみる
 		SubShader
 	{
 		Tags { "RenderType" = "Opaque"  "LightMode" = "ForwardBase" }
@@ -72,27 +72,32 @@
 				float d =0;
 				float t=0;
 				float3 p = float3(0, 0, 0);
+				float ac=0;
 				[unroll]//ループ展開
 				for (int i = 0; i < 60; ++i) { //レイマーチングのループを実行
 					p = ro + rd * t;
 					d = dist(p);
-					t += d;
-					if (d < 0.01 || t>1000)break;//レイが遠くに行き過ぎたか衝突した場合ループを終える
-				}
-				p = ro + rd * t;
-				float4 col = float4(0,0,0,1);
-				if (d > 0.01) { //レイが衝突していないと判断すれば描画しない
-					discard;
-				}
-				else {
-					float3 normal = getnormal(p);
-					float3 lightdir = normalize(mul(unity_WorldToObject, _WorldSpaceLightPos0).xyz);//ローカル座標で計算しているので、ディレクショナルライトの角度もローカル座標にする
-					float NdotL = max(0, dot(normal, lightdir));//ランバート反射を計算
-					col = float4(float3(1, 1, 1) * NdotL, 1);//描画
+					d = max(abs(d),0.02);
+					ac += exp(d*-3.);
+					t += d*0.5;
+					// if (d < 0.01 || t>1000)break;//レイが遠くに行き過ぎたか衝突した場合ループを終える
 				}
 
+				// p = ro + rd * t;
+				// float4 col = float4(0,0,0,1);
+				// if (d > 0.01) { //レイが衝突していないと判断すれば描画しない
+				// 	discard;
+				// }
+				// else {
+				// 	float3 normal = getnormal(p);
+				// 	float3 lightdir = normalize(mul(unity_WorldToObject, _WorldSpaceLightPos0).xyz);//ローカル座標で計算しているので、ディレクショナルライトの角度もローカル座標にする
+				// 	float NdotL = max(0, dot(normal, lightdir));//ランバート反射を計算
+				// 	col = float4(float3(1, 1, 1) * NdotL, 1);//描画
+				// }
+
 				fout o;
-				o.color = col;
+				ac *= 0.01;
+				o.color = float3(ac,ac,ac,1.0);
 				float4 projectionPos = UnityObjectToClipPos(float4(p, 1.0));
 				o.depth = projectionPos.z / projectionPos.w;
 				return o;
