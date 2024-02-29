@@ -46,7 +46,7 @@
 				float4 vertex : SV_POSITION;
 			};
 
-			struct pout
+			struct fout
 			{
 				fixed4 color : SV_Target;
 				float depth : SV_Depth;
@@ -62,7 +62,7 @@
 			}
 
 
-			pout frag(v2f i)
+			fout frag(v2f i)
 			{
 				//以下、ローカル座標で話が進む
 				float3 ro = mul(unity_WorldToObject,float4(_WorldSpaceCameraPos,1)).xyz;//レイのスタート位置をカメラのローカル座標とする
@@ -91,7 +91,7 @@
 					col = float4(float3(1, 1, 1) * NdotL, 1);//描画
 				}
 
-				pout o;
+				fout o;
 				o.color = col;
 				float4 projectionPos = UnityObjectToClipPos(float4(p, 1.0));
 				o.depth = projectionPos.z / projectionPos.w;
@@ -102,4 +102,5 @@
 		}
 
 	}
+	Fallback "Diffuse"
 }
